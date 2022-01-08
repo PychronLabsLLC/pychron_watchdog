@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  web:
+    build: ./web
+    command: gunicorn main:app -w 1 -b :5000 --reload -t 600
+    ports:
+      - 5001:5000
+    volumes:
+      - ./web:/home/app/web
+    depends_on:
+      - redis
+  redis:
+    image: redis:alpine
+    ports:
+      - 6379:6379

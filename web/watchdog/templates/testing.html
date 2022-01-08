@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Testing</title>
+</head>
+<body>
+<form method="post" action="/testing_experiment_start">
+    <label>ExperimentKey</label>
+    <input type="text" name="key" id="key"><br><br>
+
+    <label>Expire (s)</label>
+    <input type="number" name="expire" id="expire"><br><br>
+    <button type="submit">Submit</button>
+</form>
+
+<form method="post" action="/testing_experiment_end">
+    <label>ExperimentKey</label>
+    <input type="text" name="key" id="key"><br><br>
+    <button type="submit">Submit</button>
+</form>
+
+
+</body>
+</html>
