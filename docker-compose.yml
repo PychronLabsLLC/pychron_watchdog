@@ -1,4 +1,4 @@
-version: '3.8'
+version: '3'
 
 services:
   web:
@@ -10,6 +10,8 @@ services:
       - ./web:/home/app/web
     depends_on:
       - redis
+    env_file:
+      - .env.development
   redis:
     image: redis:alpine
     ports:

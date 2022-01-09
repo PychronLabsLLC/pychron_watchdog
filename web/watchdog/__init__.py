@@ -19,7 +19,7 @@ from flask import Flask, request, render_template
 
 app = Flask(__name__)
 
-from flask import jsonify
+from flask import jsonify, redirect, url_for
 import redis
 
 R = redis.Redis(host='redis')
@@ -29,6 +29,13 @@ R = redis.Redis(host='redis')
 def index():
     return render_template('home.html')
 
+@app.route('/failed')
+def failed():
+    data = [[k.decode('utf8'), R.get(k).decode('utf8')] for k in R.keys('failed_*')]
+
+    resp = {'data': data}
+    return jsonify(resp)
+
 
 @app.route('/status')
 def status():
@@ -37,10 +44,17 @@ def status():
         value = R.get(key)
         if value:
             value = value.decode('utf8')
-        resp = {'status': {'key': key, 'value': value, 'alive': bool(value)}}
+        data = [[key, value]]
     else:
-        resp = [{str(k): R.get(k).decode('utf8')} for k in R.keys()]
+        def factory(k):
+            kk = k.decode('utf8')
+            value = float(R.get(k).decode('utf8'))
+            tl = int(value - time.time())
+            return kk, int(value), tl
 
+        data = [factory(k) for k in R.keys('experiment_*')]
+
+    resp = {'data': data}
     return jsonify(resp)
 
 
@@ -55,8 +69,9 @@ def testing_experiment_start():
         key = request.form.get('key')
         time_to_expire_s = int(request.form.get('expire'))
         success = _experiment_start(key, time_to_expire_s)
-        return jsonify({'registered': {'key': key,
-                                       'time': success}})
+        #return jsonify({'registered': {'key': key,
+        #                               'time': success}})
+        return redirect(url_for('testing'))
 
 
 @app.route('/testing_experiment_end', methods=['POST'])

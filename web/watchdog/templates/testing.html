@@ -3,6 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <title>Testing</title>
+    <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+    <script src="https://cdn.datatables.net/1.11.3/js/jquery.dataTables.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.3/css/jquery.dataTables.min.css"></link>
+    <script>
+        $(document).ready(function(){
+            $('#status').DataTable({
+                "ajax": '{{ url_for('status') }}'
+            })
+            $('#failed').DataTable({
+                "ajax": '{{ url_for('failed') }}'
+            })
+            })
+
+        setInterval(function(){
+            $('#status').DataTable().ajax.reload();
+            $('#failed').DataTable().ajax.reload();
+        }, 5000)
+    </script>
+
 </head>
 <body>
 <form method="post" action="/testing_experiment_start">
@@ -19,6 +38,18 @@
     <input type="text" name="key" id="key"><br><br>
     <button type="submit">Submit</button>
 </form>
+
+    <table id="status" class="display">
+        <thead>
+        <tr><th>Experiment</th><th>Expire At</th><th>Time Left</th></tr>
+        </thead>
+    </table>
+
+    <table id="failed" class="display">
+        <thead>
+        <tr><th>Experiment</th><th>Failed At</th></tr>
+        </thead>
+    </table>
 
 
 </body>
