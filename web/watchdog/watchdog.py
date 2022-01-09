@@ -62,7 +62,7 @@ class Emailer:
                 return True
         except (smtplib.SMTPServerDisconnected, BaseException) as e:
             self.debug(
-                "SMTPServer connection err: {}"
+                "SMTPServer connection err: {}. "
                 "host={}, user={}, port={}".format(
                     e, self.server_host, self.server_username, self.server_port
                 )
@@ -80,7 +80,7 @@ class Emailer:
             addrs = ",".split(addrs)
 
         st = time.time()
-        for i in range(10):
+        for i in range(2):
             server = self.connect()
             if server is not None:
                 break
@@ -133,15 +133,15 @@ class Notifier:
         # send email to configured users
 
         addrs = self._get_addresses()
-        msg = self._make_message(k, context)
-        self._emailer.send(addrs, msg)
+        sub, msg = self._make_message(k, context)
+        self._emailer.send(addrs, sub, msg)
 
     def _get_addresses(self):
         addrs = os.environ.get('EMAILER_ADDRESSES', '')
         return addrs.split(',')
 
     def _make_message(self, k, context):
-        return ''
+        return 'Experiment Failed', ''
 
 
 class Monitor:
@@ -156,21 +156,23 @@ class Monitor:
         self._active.set()
 
         self._poll_thread = Thread(target=self._poll)
+        self._poll_thread.setDaemon(1)
         self._poll_thread.start()
 
     def _poll(self):
         print(f'{id(self)} starting poll')
-        poll_delay = 5
+        poll_delay = 2
         r = redis.Redis(host='redis')
         while self._active.is_set():
-            for k in r.keys('experiment_*'):
+            for k in r.keys('experiment:*'):
                 expires_at = r.get(k)
                 ct = time.time()
                 if ct > float(expires_at):
                     print(f'!!!!!! {k} expired.  {ct} {expires_at}')
-                    self._notifier.notify(k, {'ct': ct, 'expires_at': expires_at})
+
                     r.delete(k)
-                    r.set(f'failed_{k.decode("utf8")}', ct)
+                    r.set(f'failed:{k.decode("utf8")}', ct)
+                    self._notifier.notify(k, {'ct': ct, 'expires_at': expires_at})
 
             time.sleep(poll_delay)
 

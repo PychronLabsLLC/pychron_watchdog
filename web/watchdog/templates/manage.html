@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Manage</title>
+    <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+    <script src="https://cdn.datatables.net/1.11.3/js/jquery.dataTables.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.3/css/jquery.dataTables.min.css"></link>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+
+    <script>
+        $(document).ready(function(){
+            $('#status').DataTable({
+                "ajax": '{{ url_for('status') }}'
+            })
+            $('#failed').DataTable({
+                "ajax": '{{ url_for('failed') }}'
+            })
+            $('#success').DataTable({
+                "ajax": '{{ url_for('success') }}'
+            })
+        })
+
+
+        setInterval(function(){
+            $('#status').DataTable().ajax.reload();
+            $('#failed').DataTable().ajax.reload();
+            $('#success').DataTable().ajax.reload();
+        }, 5000)
+    </script>
+
+</head>
+<body>
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-6">
+                <div class="panel panel-primary">
+                    <h2>Start Experiment</h2>
+                    <form method="post" action="/testing_experiment_start">
+                        <div class="form-group">
+                            <label>ExperimentKey</label>
+                            <input type="text" name="key" id="key" class="form-control">
+
+                            <label>Expire (s)</label>
+                            <input type="number" name="expire" id="expire" class="form-control">
+                            <button type="submit">Submit</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <div class="col-sm-6">
+                <div class="panel panel-primary">
+                    <h2>Start Run</h2>
+                    <form method="post" action="/testing_run_start">
+                        <div class="form-group">
+                            <label>ExperimentKey</label>
+                            <input type="text" name="key" id="key" class="form-control">
+                            <label>RunKey</label>
+                            <input type="text" name="runkey" id="runkey" class="form-control">
+                            <label>Expire (s)</label>
+                            <input type="number" name="expire" id="expire" class="form-control">
+                            <button type="submit">Submit</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="panel panel-primary">
+                    <h2>End Experiment</h2>
+                    <form method="post" action="/testing_experiment_end">
+                        <label>ExperimentKey</label>
+                        <input type="text" name="key" id="key"><br><br>
+                        <button type="submit">Submit</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="panel panel-info">
+                    <h3>Active Experiments</h3>
+                    <table id="status" class="display">
+                        <thead>
+                            <tr><th>Experiment</th>
+                                <th>Expire At</th>
+                                <th>Time Left (s)</th></tr>
+                        </thead>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="panel panel-info">
+                    <h3>Failed Experiments</h3>
+                    <table id="failed" class="display">
+                        <thead>
+                            <tr><th>Experiment</th>
+                                <th>Failed At</th></tr>
+                        </thead>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="panel panel-info">
+                    <h3>Successful Experiments</h3>
+                    <table id="success" class="display">
+                        <thead>
+                            <tr><th>Experiment</th>
+                                <th>Ended At</th></tr>
+                        </thead>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

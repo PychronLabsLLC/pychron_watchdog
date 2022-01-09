@@ -29,9 +29,17 @@ R = redis.Redis(host='redis')
 def index():
     return render_template('home.html')
 
+@app.route('/success')
+def success():
+    data = [[k.decode('utf8'), R.get(k).decode('utf8')] for k in R.keys('success:*')]
+
+    resp = {'data': data}
+    return jsonify(resp)
+
+
 @app.route('/failed')
 def failed():
-    data = [[k.decode('utf8'), R.get(k).decode('utf8')] for k in R.keys('failed_*')]
+    data = [[k.decode('utf8'), R.get(k).decode('utf8')] for k in R.keys('failed:*')]
 
     resp = {'data': data}
     return jsonify(resp)
@@ -52,15 +60,15 @@ def status():
             tl = int(value - time.time())
             return kk, int(value), tl
 
-        data = [factory(k) for k in R.keys('experiment_*')]
+        data = [factory(k) for k in R.keys('experiment:*')]
 
     resp = {'data': data}
     return jsonify(resp)
 
 
-@app.route('/testing')
-def testing():
-    return render_template('testing.html')
+@app.route('/manage')
+def manage():
+    return render_template('manage.html')
 
 
 @app.route('/testing_experiment_start', methods=['POST'])
@@ -71,7 +79,18 @@ def testing_experiment_start():
         success = _experiment_start(key, time_to_expire_s)
         #return jsonify({'registered': {'key': key,
         #                               'time': success}})
-        return redirect(url_for('testing'))
+        return redirect(url_for('manage'))
+
+
+@app.route('/testing_run_start', methods=['POST'])
+def testing_run_start():
+    if request.method == 'POST':
+        key = request.form.get('key')
+        time_to_expire_s = int(request.form.get('expire'))
+        success = _experiment_start(key, time_to_expire_s)
+        #return jsonify({'registered': {'key': key,
+        #                               'time': success}})
+        return redirect(url_for('manage'))
 
 
 @app.route('/testing_experiment_end', methods=['POST'])
@@ -79,19 +98,21 @@ def testing_experiment_end():
     if request.method == 'POST':
         key = request.form.get('key')
         success = _experiment_end(key)
-        return jsonify({'unregistered': {'key': key, 'success': success}})
+        return redirect(url_for('manage'))
 
 
 def _experiment_start(key, expire):
-    key = f'experiment_{key}'
+    key = f'experiment:{key}'
     expire_at = time.time() + expire
     R.set(key, str(expire_at))
     return R.get(key).decode('utf8')
 
 
 def _experiment_end(key):
-    key = f'experiment_{key}'
+    key = f'experiment:{key}'
+    skey = f'success:{key}'
     R.delete(key)
+    R.set(skey, str(time.time()))
     return True
 
 
