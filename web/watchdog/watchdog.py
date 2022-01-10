@@ -106,7 +106,7 @@ class Emailer:
 
     def _message_factory(self, addrs, sub, txt, paths):
         msg = MIMEMultipart()
-        msg["From"] = self.sender  # 'nmgrl@gmail.com'
+        msg["From"] = f'{self.server_username}@gmail.com'
         msg["To"] = ",".join(addrs)
         msg["Subject"] = sub
         msg.attach(MIMEText(txt))
