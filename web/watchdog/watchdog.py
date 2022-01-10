@@ -145,7 +145,8 @@ class Notifier:
         return addrs.split(',')
 
     def _make_message(self, k, context):
-        return f'Experiment {k} Failed', f"Experiment {k} failed to respond to the watchdog. Context={context}"
+        k = k.decode('utf8')
+        return f'Experiment {k} Hard Crash', f"Experiment {k} failed to respond to the watchdog. \n\nContext={context}"
 
 
 class Monitor:
