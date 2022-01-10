@@ -13,15 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ===============================================================================
+import datetime
 import time
-
-from flask import Flask, request, render_template
+import redis
+from flask import Flask, request, render_template, jsonify, redirect, url_for
 
 app = Flask(__name__)
-
-from flask import jsonify, redirect, url_for
-import redis
-
 R = redis.Redis(host='redis')
 
 
@@ -29,46 +26,91 @@ R = redis.Redis(host='redis')
 def index():
     return render_template('home.html')
 
-@app.route('/success')
-def success():
-    data = [[k.decode('utf8'), R.get(k).decode('utf8')] for k in R.keys('success:*')]
+
+def make_ajax_table(tag, row_factory):
+    data = [row_factory(k) for k in R.keys(tag)]
 
     resp = {'data': data}
     return jsonify(resp)
+
+
+@app.route('/success')
+def success():
+    def row_factory(k):
+        v = R.get(k)
+        v = datetime.datetime.fromtimestamp(float(v))
+        return k.decode('utf8'), v
+
+    return make_ajax_table('success:*', row_factory)
 
 
 @app.route('/failed')
 def failed():
-    data = [[k.decode('utf8'), R.get(k).decode('utf8')] for k in R.keys('failed:*')]
+    def row_factory(k):
+        v = R.get(k)
+        v = datetime.datetime.fromtimestamp(float(v))
+        return k.decode('utf8'), v
 
-    resp = {'data': data}
-    return jsonify(resp)
+    return make_ajax_table('failed:*', row_factory)
 
 
 @app.route('/status')
 def status():
-    key = request.args.get('key')
-    if key:
-        value = R.get(key)
-        if value:
-            value = value.decode('utf8')
-        data = [[key, value]]
-    else:
-        def factory(k):
-            kk = k.decode('utf8')
-            value = float(R.get(k).decode('utf8'))
-            tl = int(value - time.time())
-            return kk, int(value), tl
+    def row_factory(k):
+        kk = k.decode('utf8')
+        value = float(R.get(k))
+        ts = datetime.datetime.fromtimestamp(value)
+        tl = int(value - time.time())
+        return kk, ts, tl
 
-        data = [factory(k) for k in R.keys('experiment:*')]
-
-    resp = {'data': data}
-    return jsonify(resp)
+    return make_ajax_table('experiment:*', row_factory)
 
 
 @app.route('/manage')
 def manage():
     return render_template('manage.html')
+
+
+@app.route('/experiment_start', methods=['POST'])
+def experiment_start():
+    data = request.json
+    key = data['key']
+    time_to_expire_s = data['expire']
+
+    success = _experiment_start(key, time_to_expire_s)
+    return jsonify({'registered': {'key': key,
+                                   'time': success}})
+
+
+@app.route('/run_start', methods=['POST'])
+def run_start():
+    data = request.json
+    key = data['key']
+    time_to_expire_s = data['expire']
+
+    success = _experiment_start(key, time_to_expire_s)
+    return jsonify({'registered': {'key': key,
+                                   'time': success}})
+
+
+@app.route('/run_end', methods=['POST'])
+def run_end():
+    data = request.json
+    key = data['key']
+    time_to_expire_s = data['expire']
+
+    success = _experiment_start(key, time_to_expire_s)
+    return jsonify({'registered': {'key': key,
+                                   'time': success}})
+
+
+@app.route('/experiment_end', methods=['POST'])
+def experiment_end():
+    data = request.json
+    key = data['key']
+    success = _experiment_end(key)
+    return jsonify({'unregistered': {'key': key,
+                                   'time': success}})
 
 
 @app.route('/testing_experiment_start', methods=['POST'])
@@ -77,7 +119,7 @@ def testing_experiment_start():
         key = request.form.get('key')
         time_to_expire_s = int(request.form.get('expire'))
         success = _experiment_start(key, time_to_expire_s)
-        #return jsonify({'registered': {'key': key,
+        # return jsonify({'registered': {'key': key,
         #                               'time': success}})
         return redirect(url_for('manage'))
 
@@ -88,7 +130,7 @@ def testing_run_start():
         key = request.form.get('key')
         time_to_expire_s = int(request.form.get('expire'))
         success = _experiment_start(key, time_to_expire_s)
-        #return jsonify({'registered': {'key': key,
+        # return jsonify({'registered': {'key': key,
         #                               'time': success}})
         return redirect(url_for('manage'))
 
@@ -115,13 +157,4 @@ def _experiment_end(key):
     R.set(skey, str(time.time()))
     return True
 
-
-@app.route('/run_start')
-def run_start():
-    pass
-
-
-@app.route('/run_end')
-def run_end():
-    pass
 # ============= EOF =============================================
