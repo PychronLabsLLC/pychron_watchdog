@@ -41,6 +41,10 @@ class Emailer:
     def log(self, tag, msg):
         print(f'[{tag}] -- {msg}')
 
+    @property
+    def sender(self):
+        return f'{self.server_username}@gmail.com'
+
     def config_from_env(self):
         self.server_host = os.environ.get('EMAILER_HOST')
         self.server_port = os.environ.get('EMAILER_PORT')
@@ -106,7 +110,7 @@ class Emailer:
 
     def _message_factory(self, addrs, sub, txt, paths):
         msg = MIMEMultipart()
-        msg["From"] = f'{self.server_username}@gmail.com'
+        msg["From"] = self.sender
         msg["To"] = ",".join(addrs)
         msg["Subject"] = sub
         msg.attach(MIMEText(txt))
