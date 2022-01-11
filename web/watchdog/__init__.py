@@ -78,7 +78,7 @@ def experiment_start():
     time_to_expire_s = data['expire']
     addresses = data.get('addresses')
 
-    success = _experiment_start(key, time_to_expire_s, addresses)
+    success = _register_key(key, time_to_expire_s, 'experiment_start', addresses)
     return jsonify({'registered': {'key': key,
                                    'time': success}})
 
@@ -89,7 +89,7 @@ def run_start():
     key = data['key']
     time_to_expire_s = data['expire']
 
-    success = _experiment_start(key, time_to_expire_s)
+    success = _register_key(key, time_to_expire_s, 'run_start')
     return jsonify({'registered': {'key': key,
                                    'time': success}})
 
@@ -100,7 +100,7 @@ def run_end():
     key = data['key']
     time_to_expire_s = data['expire']
 
-    success = _experiment_start(key, time_to_expire_s)
+    success = _register_key(key, time_to_expire_s, 'run_end')
     return jsonify({'registered': {'key': key,
                                    'time': success}})
 
@@ -119,7 +119,7 @@ def testing_experiment_start():
     if request.method == 'POST':
         key = request.form.get('key')
         time_to_expire_s = int(request.form.get('expire'))
-        success = _experiment_start(key, time_to_expire_s)
+        success = _register_key(key, time_to_expire_s)
         # return jsonify({'registered': {'key': key,
         #                               'time': success}})
         return redirect(url_for('manage'))
@@ -130,7 +130,7 @@ def testing_run_start():
     if request.method == 'POST':
         key = request.form.get('key')
         time_to_expire_s = int(request.form.get('expire'))
-        success = _experiment_start(key, time_to_expire_s)
+        success = _register_key(key, time_to_expire_s)
         # return jsonify({'registered': {'key': key,
         #                               'time': success}})
         return redirect(url_for('manage'))
@@ -144,12 +144,15 @@ def testing_experiment_end():
         return redirect(url_for('manage'))
 
 
-def _experiment_start(key, expire, addresses=None):
+def _register_key(key, expire, event, addresses=None):
     key = f'experiment:{key}'
     expire_at = time.time() + expire
     R.set(key, str(expire_at))
     if addresses:
-        R.set(f'email_addresses:experiment:{key}', ','.join(addresses))
+        R.set(f'email_addresses:{key}', ','.join(addresses))
+
+    skey = f'event:{key}'
+    R.set(skey, event)
 
     return R.get(key).decode('utf8')
 

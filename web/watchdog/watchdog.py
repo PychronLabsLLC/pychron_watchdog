@@ -149,7 +149,9 @@ class Notifier:
 
     def _make_message(self, k, context):
         k = k.decode('utf8')
-        return f'Experiment {k} Hard Crash', f"Experiment {k} failed to respond to the watchdog. \n\nContext={context}"
+        return f"""Experiment {k} Hard Crash', f"Experiment {k} failed to respond to the watchdog. 
+            
+Context={context}"""
 
 
 class Monitor:
@@ -182,8 +184,17 @@ class Monitor:
                     kk = k.decode('utf8')
                     r.set(f'failed:{kk}', ct)
 
-                    addresses = r.get(f'email_addresses:{kk}')
-                    self._notifier.notify(k, addresses, {'ct': ct, 'expires_at': expires_at})
+                    emk = f'email_addresses:{kk}'
+                    addresses = r.get(emk)
+                    r.delete(emk)
+
+                    evk = f'event:{kk}'
+                    evt = r.get(evk)
+                    r.delete(evk)
+
+                    self._notifier.notify(k, addresses, {'ct': ct,
+                                                         'event': evt,
+                                                         'expires_at': expires_at})
 
             time.sleep(poll_delay)
 
