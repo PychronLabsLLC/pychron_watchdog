@@ -132,17 +132,20 @@ class Notifier:
     def __init__(self):
         self._emailer = Emailer()
 
-    def notify(self, k, context):
+    def notify(self, k, addresses, context):
         print(f'Notify, k={k}, context={context}')
         # send email to configured users
 
-        addrs = self._get_addresses()
+        addrs = self._get_addresses(addresses)
         sub, msg = self._make_message(k, context)
         self._emailer.send(addrs, sub, msg)
 
-    def _get_addresses(self):
+    def _get_addresses(self, addresses):
         addrs = os.environ.get('EMAILER_ADDRESSES', '')
-        return addrs.split(',')
+        addrs = addrs.split(',')
+        if addresses:
+            addrs.extend(addresses.split(','))
+        return addrs
 
     def _make_message(self, k, context):
         k = k.decode('utf8')
@@ -176,8 +179,11 @@ class Monitor:
                     print(f'!!!!!! {k} expired.  {ct} {expires_at}')
 
                     r.delete(k)
-                    r.set(f'failed:{k.decode("utf8")}', ct)
-                    self._notifier.notify(k, {'ct': ct, 'expires_at': expires_at})
+                    kk = k.decode('utf8')
+                    r.set(f'failed:{kk}', ct)
+
+                    addresses = r.get(f'email_addresses:{kk}')
+                    self._notifier.notify(k, addresses, {'ct': ct, 'expires_at': expires_at})
 
             time.sleep(poll_delay)
 

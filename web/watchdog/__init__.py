@@ -76,8 +76,9 @@ def experiment_start():
     data = request.json
     key = data['key']
     time_to_expire_s = data['expire']
+    addresses = data.get('addresses')
 
-    success = _experiment_start(key, time_to_expire_s)
+    success = _experiment_start(key, time_to_expire_s, addresses)
     return jsonify({'registered': {'key': key,
                                    'time': success}})
 
@@ -143,10 +144,13 @@ def testing_experiment_end():
         return redirect(url_for('manage'))
 
 
-def _experiment_start(key, expire):
+def _experiment_start(key, expire, addresses=None):
     key = f'experiment:{key}'
     expire_at = time.time() + expire
     R.set(key, str(expire_at))
+    if addresses:
+        R.set(f'email_addresses:experiment:{key}', ','.join(addresses))
+
     return R.get(key).decode('utf8')
 
 
