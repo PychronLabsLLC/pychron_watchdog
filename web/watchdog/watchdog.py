@@ -149,7 +149,7 @@ class Notifier:
 
     def _make_message(self, k, context):
         k = k.decode('utf8')
-        return f"""Experiment {k} Hard Crash', f"Experiment {k} failed to respond to the watchdog. 
+        return f"Experiment {k} Hard Crash'", f"""Experiment {k} failed to respond to the watchdog. 
             
 Context={context}"""
 
