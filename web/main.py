@@ -13,8 +13,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ===============================================================================
-from watchdog.watchdog import monitor
 from watchdog import app
+from watchdog.monitor import monitor
+from watchdog.watchdog import bp as wd
+
+app.register_blueprint(wd)
+
+
+monitor.start()
 
 
 # ============= EOF =============================================

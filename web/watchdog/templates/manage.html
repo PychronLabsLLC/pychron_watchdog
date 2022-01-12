@@ -12,13 +12,13 @@
     <script>
         $(document).ready(function(){
             $('#status').DataTable({
-                "ajax": '{{ url_for('status') }}'
+                "ajax": '{{ url_for('watchdog.status') }}'
             })
             $('#failed').DataTable({
-                "ajax": '{{ url_for('failed') }}'
+                "ajax": '{{ url_for('watchdog.failed') }}'
             })
             $('#success').DataTable({
-                "ajax": '{{ url_for('success') }}'
+                "ajax": '{{ url_for('watchdog.success') }}'
             })
         })
 
