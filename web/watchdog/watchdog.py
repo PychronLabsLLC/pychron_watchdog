@@ -95,7 +95,7 @@ def run_start():
 
 
 @bp.route('/run_save', methods=['POST'])
-def run_start():
+def run_save():
     data = request.json
     key = data['key']
     time_to_expire_s = data['expire']
