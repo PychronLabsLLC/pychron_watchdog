@@ -94,6 +94,17 @@ def run_start():
                                    'time': success}})
 
 
+@bp.route('/run_save', methods=['POST'])
+def run_start():
+    data = request.json
+    key = data['key']
+    time_to_expire_s = data['expire']
+
+    success = _register_key(key, time_to_expire_s, 'run_save')
+    return jsonify({'registered': {'key': key,
+                                   'time': success}})
+
+
 @bp.route('/run_end', methods=['POST'])
 def run_end():
     data = request.json
