@@ -1,3 +1,4 @@
 Flask>=2.0.2
 redis
 gunicorn==20.1.0
+sendgrid
