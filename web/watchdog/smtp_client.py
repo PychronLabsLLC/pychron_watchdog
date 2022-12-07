@@ -65,7 +65,7 @@ class SMTPClient(Client):
 
         return server
 
-    def sendemail(self, addrs, sub, msg, paths=None):
+    def sendmail(self, addrs, sub, msg, paths=None):
         self.info("Send email. addrs: {}".format(addrs, sub))
 
         if "," in addrs:

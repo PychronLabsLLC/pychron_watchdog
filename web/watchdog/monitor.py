@@ -33,7 +33,7 @@ class Notifier:
         addrs = self._get_addresses([])
         sub = 'WatchDog Started'
         msg = 'This is a test message to indicate the Pychron WatchDog has started'
-        self._sender.sendemail(addrs, sub, msg)
+        self._sender.sendmail(addrs, sub, msg)
 
     def notify(self, k, addresses, context):
         print(f'Notify, k={k}, context={context}')
@@ -41,7 +41,7 @@ class Notifier:
 
         addrs = self._get_addresses(addresses)
         sub, msg = self._make_message(k, context)
-        self._sender.sendemail(addrs, sub, msg)
+        self._sender.sendmail(addrs, sub, msg)
 
     def _get_addresses(self, addresses):
         addrs = os.environ.get('EMAILER_ADDRESSES', '')
