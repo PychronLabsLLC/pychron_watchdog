@@ -18,6 +18,7 @@ class Client:
     handle = None
     def connect(self):
         self.handle = self._get_handle()
+        return self.handle
 
     def sendmail(self, *args, **kw):
         raise NotImplementedError
