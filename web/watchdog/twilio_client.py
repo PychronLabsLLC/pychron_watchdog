@@ -20,9 +20,10 @@ from sendgrid import SendGridAPIClient, Mail
 
 
 class TwilioClient(Client):
+
     def sendmail(self, addrs, sub, msg):
         sg = self.connect()
-        message = Mail(from_email=self.sender,
+        message = Mail(from_email= 'nmgrl4039@gmail.com',
                        to_emails=addrs,
                        subject=sub,
                        plain_text_content=msg
