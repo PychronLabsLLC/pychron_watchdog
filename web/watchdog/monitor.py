@@ -28,6 +28,13 @@ class Notifier:
         # self._sender = SMTPClient()
         self._sender = TwilioClient()
 
+    def start(self):
+        # send a test notification to indicate the watchdog has started
+        addrs = self._get_addresses([])
+        sub = 'WatchDog Started'
+        msg = 'This is a test message to indicate the Pychron WatchDog has started'
+        self._sender.sendemail(addrs, sub, msg)
+
     def notify(self, k, addresses, context):
         print(f'Notify, k={k}, context={context}')
         # send email to configured users
@@ -58,6 +65,7 @@ class Monitor:
         self._notifier = Notifier()
 
     def start(self):
+        self._notifier.start()
         self._active = Event()
         self._active.set()
 
